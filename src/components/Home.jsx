@@ -19,37 +19,37 @@ const Home = () => {
       title: 'Period Furniture',
       description: 'Elegant Georgian mahogany to refined Regency pieces',
       image: furnitureImage,
-      link: '/collection'
+      link: '/contact'
     },
     {
       title: 'Ceramics & Porcelain',
       description: 'Worcester, Derby, and Chelsea manufactories',
       image: porcelainImage,
-      link: '/collection'
+      link: '/contact'
     },
     {
       title: 'Silver & Sheffield Plate',
       description: 'Georgian and Victorian pieces, tea services to decorative items',
       image: silverImage,
-      link: '/collection'
+      link: '/contact'
     },
     {
       title: 'Antique Prints',
       description: 'Historical maps, botanical prints, architectural drawings',
       image: printsImage,
-      link: '/collection'
+      link: '/contact'
     },
     {
       title: 'Sculpture & Bronzes',
       description: 'Classical and contemporary works in bronze and marble',
       image: sculptureImage,
-      link: '/collection'
+      link: '/contact'
     },
     {
       title: 'Decorative Arts',
       description: 'Quality pieces spanning four centuries of English design',
       image: decorativeImage,
-      link: '/collection'
+      link: '/contact'
     }
   ]
 
