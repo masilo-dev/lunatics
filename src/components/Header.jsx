@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, Phone, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import lunarLogo from '../assets/lunar-logo.png'
+// import lunarLogo from '../assets/lunar-logo.png'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -47,9 +47,9 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <img 
-              src={lunarLogo} 
+              src="/logo.png" 
               alt="Lunar Antiques" 
-              className="h-10 sm:h-12 lg:h-14 w-auto"
+              className="h-6 sm:h-8 lg:h-10 w-auto"
             />
           </Link>
 

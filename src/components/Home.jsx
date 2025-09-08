@@ -98,6 +98,11 @@ const Home = () => {
                 Explore Collection <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-3 w-full sm:w-auto">
+              <Link to="/contact">
+                Buy Now
+              </Link>
+            </Button>
             <Button asChild variant="outline" size="lg" className="btn-story text-lg px-8 py-3 w-full sm:w-auto font-semibold">
               <Link to="/about">
                 Our Story
