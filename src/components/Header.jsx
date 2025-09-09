@@ -43,15 +43,8 @@ const Header = () => {
 
       {/* Main navigation */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4 lg:py-6">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3">
-            <img 
-              src="/logo.png" 
-              alt="Lunar Antiques" 
-              className="h-6 sm:h-8 lg:h-10 w-auto"
-            />
-          </Link>
+        <div className="flex justify-center items-center py-4 lg:py-6">
+          {/* Logo removed as requested */}
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex space-x-8 xl:space-x-12">
