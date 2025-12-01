@@ -109,7 +109,7 @@ export const CollectionProvider = ({ children }) => {
   const addItem = (item) => {
     const newItem = {
       ...item,
-      id: Date.now() // Simple ID generation
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now() // Use crypto.randomUUID for better uniqueness
     }
     const updatedItems = [...collectionItems, newItem]
     setCollectionItems(updatedItems)

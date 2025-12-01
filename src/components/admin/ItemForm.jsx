@@ -29,7 +29,7 @@ const ItemForm = () => {
 
   useEffect(() => {
     if (isEditMode) {
-      const item = getItem(Number(id))
+      const item = getItem(id)
       if (item) {
         setFormData({
           title: item.title,
@@ -37,7 +37,7 @@ const ItemForm = () => {
           period: item.period,
           price: item.price,
           description: item.description,
-          images: [...item.images, '', '', '', ''].slice(0, 4),
+          images: Array(4).fill('').map((_, i) => item.images[i] || ''),
           featured: item.featured
         })
       }
@@ -88,7 +88,7 @@ const ItemForm = () => {
     }
 
     if (isEditMode) {
-      updateItem(Number(id), itemData)
+      updateItem(id, itemData)
       toast.success('Item updated successfully')
     } else {
       addItem(itemData)

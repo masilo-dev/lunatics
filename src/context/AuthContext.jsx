@@ -24,7 +24,8 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   const login = (username, password) => {
-    // Simple authentication - in production, this should be server-side
+    // Simple authentication for development/demo purposes only
+    // WARNING: In production, authentication MUST be server-side with proper password hashing
     // Default credentials: admin / admin123
     if (username === 'admin' && password === 'admin123') {
       const userData = { username, role: 'admin' }
