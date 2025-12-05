@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
+import {
   Shield, 
   Globe, 
   Search, 
@@ -14,9 +14,24 @@ import {
   Award,
   Phone
 } from 'lucide-react'
+import { supabase } from '@/lib/supabaseClient'
 
-const Services = () => {
-  const services = [
+// Icon mapping for services
+const iconMap = {
+  Shield,
+  Globe,
+  Search,
+  TrendingUp,
+  Wrench,
+  Users,
+  CheckCircle,
+  Clock,
+  Award,
+  Phone,
+}
+
+// Default services (fallback)
+const defaultServices = [
     {
       icon: Shield,
       title: 'Authentication & Expertise',
@@ -98,6 +113,59 @@ const Services = () => {
       pricing: 'No fee unless successful'
     }
   ]
+
+const Services = () => {
+  const [services, setServices] = useState(defaultServices)
+
+  useEffect(() => {
+    fetchServices()
+  }, [])
+
+  const fetchServices = async () => {
+    try {
+      // Fetch published services from Supabase
+      const { data: servicesData, error: servicesError } = await supabase
+        .from('cms_services')
+        .select('*')
+        .eq('published', true)
+        .order('display_order', { ascending: true })
+
+      if (servicesError) throw servicesError
+
+      // Fetch features for each service
+      const servicesWithFeatures = await Promise.all(
+        (servicesData || []).map(async (service) => {
+          const { data: featuresData, error: featuresError } = await supabase
+            .from('cms_service_features')
+            .select('*')
+            .eq('service_id', service.id)
+            .order('display_order', { ascending: true })
+
+          if (featuresError) {
+            console.error('Error fetching features:', featuresError)
+            return { ...service, features: [] }
+          }
+
+          // Map icon name to component (default to Shield if not found)
+          const IconComponent = iconMap[service.icon_name] || Shield
+
+          return {
+            ...service,
+            icon: IconComponent,
+            features: (featuresData || []).map((f) => f.feature_text),
+          }
+        })
+      )
+
+      // Only use Supabase data if we have items, otherwise use fallback
+      if (servicesWithFeatures.length > 0) {
+        setServices(servicesWithFeatures)
+      }
+    } catch (error) {
+      console.error('Error fetching services:', error)
+      // Keep default services on error
+    }
+  }
 
   const tradeServices = [
     'Special trade pricing and terms',
