@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react'
+import { supabase } from '@/lib/supabaseClient'
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -53,37 +54,42 @@ const Contact = () => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
-    
+
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      })
-      
-      const result = await response.json()
-      
-      if (response.ok) {
-        setIsSubmitted(true)
-        // Reset form after 5 seconds
-        setTimeout(() => {
-          setIsSubmitted(false)
-          setFormData({
-            name: '',
-            email: '',
-            phone: '',
-            subject: '',
-            message: '',
-            inquiryType: ''
+      if (supabase) {
+        const { error: insertError } = await supabase
+          .from('crm_contacts')
+          .insert({
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone || null,
+            subject: formData.subject,
+            message: formData.message,
+            inquiry_type: formData.inquiryType || null,
           })
-        }, 5000)
-      } else {
-        setError(result.error || 'An error occurred while sending your message')
+
+        if (insertError) {
+          setError(insertError.message)
+          setIsLoading(false)
+          return
+        }
       }
+
+      setIsSubmitted(true)
+      // Reset form after 5 seconds
+      setTimeout(() => {
+        setIsSubmitted(false)
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: '',
+          inquiryType: ''
+        })
+      }, 5000)
     } catch (err) {
-      setError('Network error. Please check your connection and try again.')
+      setError('Unexpected error while sending your message.')
     } finally {
       setIsLoading(false)
     }

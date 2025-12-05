@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Search, Filter, Eye, RotateCw } from 'lucide-react'
 import ItemViewer360 from './ItemViewer360'
-
-// Import images for different categories
+import { supabase } from '@/lib/supabaseClient'
+// Import images for different categories (fallback)
 import furnitureImage1 from '../assets/Mt8UIYp8PTe2.jpg'
 import furnitureImage2 from '../assets/w7pz82Ruagn0.jpg'
 import furnitureImage3 from '../assets/3QAvanu56aUE.jpg'
@@ -27,14 +27,8 @@ import decorativeImage1 from '../assets/T1Iq0trCBhRF.jpg'
 import decorativeImage2 from '../assets/CcGpx6xQiJqw.jpg'
 import decorativeImage3 from '../assets/t2w5tmjgermH.jpg'
 
-const Collection = () => {
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedPeriod, setSelectedPeriod] = useState('all')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedItem, setSelectedItem] = useState(null)
-
-  // Sample collection data with multiple images for 360 view
-  const collectionItems = [
+// Original static collection data (fallback)
+const defaultCollectionItems = [
     {
       id: 1,
       title: 'Georgian Mahogany Chest of Drawers',
@@ -42,7 +36,7 @@ const Collection = () => {
       period: 'georgian',
       price: '£2,850',
       description: 'Fine Georgian mahogany chest of drawers, circa 1780. Excellent condition with original brass handles.',
-      images: [furnitureImage1, '/src/assets/tTImFRDPoRDj.jpeg', '/src/assets/sfeOCW3PpbdO.jpg', '/src/assets/tiu3erQLS4iG.jpg'],
+      images: [furnitureImage1, furnitureImage2, furnitureImage3],
       featured: true
     },
     {
@@ -52,7 +46,7 @@ const Collection = () => {
       period: 'georgian',
       price: '£1,650',
       description: 'Complete Worcester porcelain tea service with hand-painted floral decoration, circa 1770.',
-      images: ['/src/assets/3Ve7fIDsNkcE.jpg', '/src/assets/p6GYsWrjGQ0e.jpg', '/src/assets/ytfV1HOvkAPe.jpg', '/src/assets/SVOvjw1Lbrk6.jpg'],
+      images: [porcelainImage1, porcelainImage2, porcelainImage3],
       featured: true
     },
     {
@@ -96,6 +90,59 @@ const Collection = () => {
       featured: false
     }
   ]
+
+const Collection = () => {
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedPeriod, setSelectedPeriod] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [collectionItems, setCollectionItems] = useState(defaultCollectionItems)
+
+  useEffect(() => {
+    fetchCollectionItems()
+  }, [])
+
+  const fetchCollectionItems = async () => {
+    try {
+      // Fetch published collection items from Supabase
+      const { data: itemsData, error: itemsError } = await supabase
+        .from('cms_collection_items')
+        .select('*')
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+
+      if (itemsError) throw itemsError
+
+      // Fetch images for each item
+      const itemsWithImages = await Promise.all(
+        (itemsData || []).map(async (item) => {
+          const { data: imagesData, error: imagesError } = await supabase
+            .from('cms_collection_images')
+            .select('*')
+            .eq('collection_item_id', item.id)
+            .order('display_order', { ascending: true })
+
+          if (imagesError) {
+            console.error('Error fetching images:', imagesError)
+            return { ...item, images: [] }
+          }
+
+          return {
+            ...item,
+            images: (imagesData || []).map((img) => img.image_url),
+          }
+        })
+      )
+
+      // Only use Supabase data if we have items, otherwise use fallback
+      if (itemsWithImages.length > 0) {
+        setCollectionItems(itemsWithImages)
+      }
+    } catch (error) {
+      console.error('Error fetching collection items:', error)
+      // Keep default items on error
+    }
+  }
 
   const categories = [
     { value: 'all', label: 'All Categories' },
@@ -203,11 +250,17 @@ const Collection = () => {
             {filteredItems.map((item) => (
               <Card key={item.id} className="overflow-hidden card-hover group">
                 <div className="relative h-64 image-overlay">
-                  <img 
-                    src={item.images[0]} 
-                    alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
+                  {item.images && item.images.length > 0 ? (
+                    <img 
+                      src={item.images[0]} 
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center text-sm text-muted-foreground">
+                      No image
+                    </div>
+                  )}
                   {item.featured && (
                     <Badge className="absolute top-3 left-3 bg-secondary text-secondary-foreground">
                       Featured
@@ -237,6 +290,7 @@ const Collection = () => {
                       size="sm" 
                       onClick={() => openViewer(item)}
                       className="flex items-center space-x-1"
+                      disabled={!item.images || item.images.length === 0}
                     >
                       <Eye className="h-4 w-4" />
                       <span>360° View</span>
@@ -246,14 +300,6 @@ const Collection = () => {
               </Card>
             ))}
           </div>
-
-          {filteredItems.length === 0 && (
-            <div className="text-center py-12">
-              <Filter className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No items found</h3>
-              <p className="text-muted-foreground">Try adjusting your search criteria or browse all categories.</p>
-            </div>
-          )}
         </div>
       </section>
 
